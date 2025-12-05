@@ -2,6 +2,7 @@ package com.scaler.productcatalogservice_nov2025evening.controllers;
 
 import com.scaler.productcatalogservice_nov2025evening.dtos.CategoryDto;
 import com.scaler.productcatalogservice_nov2025evening.dtos.ProductDto;
+import com.scaler.productcatalogservice_nov2025evening.exceptions.ProductNotFoundException;
 import com.scaler.productcatalogservice_nov2025evening.models.Category;
 import com.scaler.productcatalogservice_nov2025evening.models.Product;
 import com.scaler.productcatalogservice_nov2025evening.services.IProductService;
@@ -35,7 +36,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id){
-        try {
+
             if (id <= 0) {
                 throw new IllegalArgumentException("Id must be greater than 0");
             }
@@ -44,11 +45,9 @@ public class ProductController {
                 ProductDto resp = from(product);
                 return new ResponseEntity<>(resp, HttpStatus.OK);
             } else {
-                throw new NullPointerException("Not a valid product");
+                throw new ProductNotFoundException("Product with id > 20 not found");
             }
-        }catch(Exception exception){
-            return new ResponseEntity<>((ProductDto) null, HttpStatusCode.valueOf(400));
-        }
+
     }
     @PostMapping
     public ProductDto createProduct(@RequestBody ProductDto productDto){
