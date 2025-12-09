@@ -62,6 +62,11 @@ public class FakeStoreProductService implements IProductService{
         return from(fakeStoreProductDtoResponseEntity.getBody());
     }
 
+    @Override
+    public void deleteProduct(Long id) {
+        // to implement
+    }
+
     private Product from(FakeStoreProductDto fakeStoreProductDto) {
         Product product = new Product();
         product.setId(fakeStoreProductDto.getId());

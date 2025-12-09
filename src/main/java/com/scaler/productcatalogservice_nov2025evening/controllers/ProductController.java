@@ -7,6 +7,7 @@ import com.scaler.productcatalogservice_nov2025evening.models.Category;
 import com.scaler.productcatalogservice_nov2025evening.models.Product;
 import com.scaler.productcatalogservice_nov2025evening.services.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +21,29 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
+    @Qualifier("sps")  // or storageProductService if custom name not provided.
+    //Qualifier is used when you have multiple inplementations like fake store and storage product, both
+    // implementing IProductservice and @Autowire doesnot know which to pick if @Primary is not mentioned,
+    //also @Primary is used when you only want to read from one implemetation all time, and if you have two controllers,
+    // and in one controller you want to read from one implemetation and in other controller you want to read from the other.
     private IProductService productService;
 
     @GetMapping
-    public List<Product> getAllProducts(){
-        Product product1 = new Product();
-        product1.setId(1L);
-        product1.setName("iphone");
-        product1.setDescription("iphone 16 pro");
-        product1.setPrice(15.0);
-        List<Product> products = new ArrayList<Product>();
-        products.add(product1);
-        return products;
+    public List<ProductDto> getAllProducts(){
+//        Product product1 = new Product();
+//        product1.setId(1L);
+//        product1.setName("iphone");
+//        product1.setDescription("iphone 16 pro");
+//        product1.setPrice(15.0);
+//        List<Product> products = new ArrayList<Product>();
+//        products.add(product1);
+//        return products;
+        List<ProductDto> res = new ArrayList<>();
+        List<Product> products = productService.getAllProducts();
+        for(Product p : products){
+            res.add(from(p));
+        }
+        return res;
     }
 
     @GetMapping("/{id}")
@@ -45,19 +57,29 @@ public class ProductController {
                 ProductDto resp = from(product);
                 return new ResponseEntity<>(resp, HttpStatus.OK);
             } else {
-                throw new ProductNotFoundException("Product with id > 20 not found");
+                throw new ProductNotFoundException("Product with requested id not found");
             }
 
     }
     @PostMapping
     public ProductDto createProduct(@RequestBody ProductDto productDto){
-        return productDto;
+        Product product = from(productDto);
+        Product res = productService.createProduct(product);
+        return from(res);
     }
 
     @PutMapping("/{id}")
     public ProductDto replaceProduct(@PathVariable Long id,@RequestBody ProductDto productDto){
         Product product = productService.replaceProduct(id, from(productDto));
-        return from(product);
+        if(product != null) {
+            return from(product);
+        }else{
+            throw new ProductNotFoundException("Product with requested id not found");
+        }
+    }
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id){
+        productService.deleteProduct(id);
     }
 
     private ProductDto from(Product product){
